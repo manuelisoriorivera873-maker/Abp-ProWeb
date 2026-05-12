@@ -8,10 +8,14 @@ class producto extends Model
 {
     protected $table = 'productos';
     protected $primaryKey = 'id_producto';
+    
+    // IMPORTANTE: Como en tu SQL no usas AUTO_INCREMENT,
+    // avisamos a Laravel que no intente incrementar el ID automáticamente.
+    public $incrementing = true; 
+    
     public $timestamps = false;
     
     protected $fillable = [
-        'id_producto',
         'codigo',  
         'nombre',   
         'descripcion',  
@@ -22,10 +26,8 @@ class producto extends Model
         'id_proveedor'
     ];
 
-    // ESTO ES LO QUE FALTA:
     public function proveedor()
     {
-        // Se conecta con el modelo 'proveedor' usando la columna 'id_proveedor'
         return $this->belongsTo(proveedor::class, 'id_proveedor');
     }
 }

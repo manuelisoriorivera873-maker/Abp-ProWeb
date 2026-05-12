@@ -12,6 +12,17 @@
             </div>
 
             <div class="card-body p-5">
+                {{-- Mostrar alertas generales si prefieres --}}
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form action="{{ route('productos.store') }}" method="POST">
                     @csrf
 
@@ -20,26 +31,38 @@
                             <label for="codigo" class="form-label fw-bold">Código de Barras / SKU</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fas fa-barcode"></i></span>
-                                <input type="text" id="codigo" name="codigo" class="form-control" value="{{ old('codigo')?old('codigo'):$producto->codigo??'' }}" placeholder="Escanee o digite el código" >
+                                <input type="text" id="codigo" name="codigo" 
+                                    class="form-control @error('codigo') is-invalid @enderror" 
+                                    value="{{ old('codigo') }}" placeholder="Escanee o digite el código">
+                                @error('codigo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
                         <div class="col-md-8 mb-3">
                             <label for="nombre" class="form-label fw-bold">Nombre del Producto</label>
-                            <input type="text" id="nombre" name="nombre" class="form-control" value="{{ old('nombre') }}" placeholder="Ej: Jabón Líquido" >
+                            <input type="text" id="nombre" name="nombre" 
+                                class="form-control @error('nombre') is-invalid @enderror" 
+                                value="{{ old('nombre') }}" placeholder="Ej: Jabón Líquido">
+                            @error('nombre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             <label for="categoria" class="form-label fw-bold">Categoría</label>
-                            <input type="text" id="categoria" name="categoria" class="form-control" value="{{ old('categoria') }}" placeholder="Ej: Limpieza">
+                            <input type="text" id="categoria" name="categoria" 
+                                class="form-control @error('categoria') is-invalid @enderror" 
+                                value="{{ old('categoria') }}" placeholder="Ej: Limpieza">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="descripcion" class="form-label fw-bold">Descripción</label>
-                        <textarea id="descripcion" name="descripcion" class="form-control" rows="2" placeholder="Detalles adicionales del producto">{{ old('descripcion') }}</textarea>
+                        <textarea id="descripcion" name="descripcion" class="form-control" rows="2">{{ old('descripcion') }}</textarea>
                     </div>
 
                     <div class="row">
@@ -47,7 +70,9 @@
                             <label for="precio_compra" class="form-label fw-bold">Precio Compra</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" id="precio_compra" name="precio_compra" class="form-control" value="{{ old('precio_compra') }}" >
+                                <input type="number" step="0.01" id="precio_compra" name="precio_compra" 
+                                    class="form-control @error('precio_compra') is-invalid @enderror" 
+                                    value="{{ old('precio_compra') }}">
                             </div>
                         </div>
 
@@ -55,20 +80,24 @@
                             <label for="precio_venta" class="form-label fw-bold">Precio Venta</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" id="precio_venta" name="precio_venta" class="form-control" value="{{ old('precio_venta') }}" >
+                                <input type="number" step="0.01" id="precio_venta" name="precio_venta" 
+                                    class="form-control @error('precio_venta') is-invalid @enderror" 
+                                    value="{{ old('precio_venta') }}">
                             </div>
                         </div>
 
                         <div class="col-md-4 mb-3">
                             <label for="stock" class="form-label fw-bold">Stock Inicial</label>
-                            <input type="number" id="stock" name="stock" class="form-control" value="{{ old('stock') }}" >
+                            <input type="number" id="stock" name="stock" 
+                                class="form-control @error('stock') is-invalid @enderror" 
+                                value="{{ old('stock') }}">
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label for="id_proveedor" class="form-label fw-bold">Proveedor</label>
-                        <select id="id_proveedor" name="id_proveedor" class="form-select" >
-                            <option value="" disabled selected>Seleccione el proveedor</option>
+                        <select id="id_proveedor" name="id_proveedor" class="form-select @error('id_proveedor') is-invalid @enderror">
+                            <option value="" disabled {{ old('id_proveedor') ? '' : 'selected' }}>Seleccione el proveedor</option>
                             @foreach($proveedores as $proveedor)
                                 <option value="{{ $proveedor->id_proveedor }}" {{ old('id_proveedor') == $proveedor->id_proveedor ? 'selected' : '' }}>
                                     {{ $proveedor->nombre_comercial }}
@@ -84,9 +113,7 @@
                             </button>
                         </div>
                         <div class="col-6">
-                            <a href="{{ route('productos.index') }}" class="btn btn-outline-secondary w-100">
-                                Cancelar
-                            </a>
+                            <a href="{{ route('productos.index') }}" class="btn btn-outline-secondary w-100">Cancelar</a>
                         </div>
                     </div>
                 </form>
