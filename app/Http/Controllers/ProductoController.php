@@ -20,42 +20,54 @@ class ProductoController extends Controller
         return view('producto.create', compact('proveedores'));
     }
 
-    public function show(producto $producto)
-    {
-        $proveedores = proveedor::all();
-        return view('producto.show', compact('proveedores','producto'));
-    }
-
-    /**
-     * Guarda el producto con validaciones de coherencia y mensajes en español.
-     */
+    public function show($id)
+{
+    // Redirigir al index si alguien intenta entrar a /productos/{id}
+    return redirect()->route('productos.index');
+}
     public function store(Request $request)
     {
         $request->validate([
             'codigo'        => 'required|string|unique:productos,codigo|max:50',
             'nombre'        => 'required|string|max:100',
             'precio_compra' => 'required|numeric|min:0',
-            // COHERENCIA: El precio de venta debe ser mayor al de compra para asegurar ganancia
             'precio_venta'  => 'required|numeric|gt:precio_compra',
             'stock'         => 'required|integer|min:0',
             'id_proveedor'  => 'required|exists:proveedores,id_proveedor',
         ], [
-            'codigo.required'      => 'El código de barras es obligatorio para el inventario.',
-            'codigo.unique'        => 'Este código ya pertenece a otro producto registrado.',
+            'codigo.required'      => 'El código de barras es obligatorio.',
+            'codigo.unique'        => 'Este código ya pertenece a otro producto.',
             'nombre.required'      => 'El nombre del producto es necesario.',
-            'precio_compra.required' => 'Ingresa el costo de compra.',
-            'precio_venta.required'  => 'El precio de venta no puede quedar vacío.',
             'precio_venta.gt'      => '¡Cuidado! El precio de venta debe ser mayor al de compra para generar ganancia.',
-            'stock.required'       => 'Debes indicar cuántas piezas hay en existencia.',
-            'id_proveedor.required' => 'Selecciona un proveedor de la lista.',
-            'id_proveedor.exists'   => 'El proveedor seleccionado no es válido o no existe.'
+            'id_proveedor.exists'   => 'El proveedor seleccionado no es válido.'
         ]);
 
-        // Al ser autoincrementable, Laravel y MySQL se encargan del ID solo.
         producto::create($request->all());
 
         return redirect()->route('productos.index')
             ->with('success', 'Producto registrado exitosamente en Tienda La Subidita.');
+    }
+
+    /**
+     * Método nuevo: Sumar stock al inventario existente
+     */
+    public function sumarStock(Request $request, $id)
+    {
+        $request->validate([
+            'cantidad' => 'required|integer|min:1'
+        ], [
+            'cantidad.required' => 'Debes ingresar una cantidad.',
+            'cantidad.min'      => 'La cantidad a sumar debe ser al menos 1.'
+        ]);
+
+        $producto = producto::findOrFail($id);
+        
+        // Lógica de coherencia: sumamos a lo que ya hay
+        $producto->stock += $request->cantidad;
+        $producto->save();
+
+        return redirect()->route('productos.index')
+            ->with('success', "Se han añadido {$request->cantidad} unidades a {$producto->nombre} correctamente.");
     }
 
     public function edit($id)
@@ -65,9 +77,6 @@ class ProductoController extends Controller
         return view('producto.edit', compact('producto', 'proveedores'));
     }
 
-    /**
-     * Actualiza validando que el código no choque, excepto con el mismo producto.
-     */
     public function update(Request $request, $id)
     {
         $producto = producto::findOrFail($id);
@@ -80,9 +89,8 @@ class ProductoController extends Controller
             'stock'         => 'required|integer|min:0',
             'id_proveedor'  => 'required|exists:proveedores,id_proveedor',
         ], [
-            'codigo.unique'   => 'Este código de barras ya lo tiene otro producto.',
-            'precio_venta.gt' => 'El precio de venta debe ser mayor al precio de compra.',
-            'id_proveedor.exists' => 'El proveedor seleccionado no es válido.'
+            'codigo.unique'   => 'Este código ya lo tiene otro producto.',
+            'precio_venta.gt' => 'El precio de venta debe ser mayor al de compra.'
         ]);
 
         $producto->update($request->all());
@@ -94,9 +102,6 @@ class ProductoController extends Controller
     public function destroy($id)
     {
         $producto = producto::findOrFail($id);
-        
-        // Opcional: Podríamos verificar si tiene ventas antes de borrar,
-        // pero por ahora hacemos el borrado directo.
         $producto->delete();
 
         return redirect()->route('productos.index')

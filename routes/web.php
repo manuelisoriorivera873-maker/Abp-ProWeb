@@ -32,4 +32,4 @@ Route::middleware('auth')->group(function () {
     Route::resource('recargas_telefonicas', 'App\Http\Controllers\RecargaTelefonicaController');
     Route::resource('saldo_disponible', 'App\Http\Controllers\SaldoDisponibleController');
     Route::resource('cortes_caja', 'App\Http\Controllers\CorteCajaController');
-});
+    Route::post('/productos/{id}/sumar', [ProductoController::class, 'sumarStock'])->name('productos.sumar');});
