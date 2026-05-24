@@ -15,7 +15,8 @@
 
             <div class="card-body p-5">
 
-                <form action="{{ route('proveedores.store') }}" method="POST">
+                <form action="{{ route('proveedores.store') }}" method="POST" id="form-proveedor" novalidate autocomplete="off">
+
                     @csrf
 
                     <div class="row">
@@ -26,7 +27,7 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control" placeholder="Ej: 5512345678" required>
+                            <input type="text" name="telefono" class="form-control" placeholder="Ej: 5512345678" minlength="10" maxlength="10" pattern="[0-9]{10}" required>
                         </div>
                     </div>
 
@@ -48,10 +49,10 @@
                         </div>
 
                         <div class="col-md-6 mb-4">
-                            <label class="form-label">Interés (%)</label>
+                            <label class="form-label">Interés </label>
                             <select name="interes" class="form-select">
-                                <option value="0">0%</option>
-                                @for ($i = 1; $i <= 15; $i++)
+                                <option value="0">Selecciona el interes</option>
+                                @for ($i = 0; $i <= 15; $i++)
                                     <option value="{{ $i }}">{{ $i }}%</option>
                                 @endfor
                             </select>
@@ -78,5 +79,57 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.getElementById('form-proveedor').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+
+    if (!this.checkValidity()) {
+        this.classList.add('was-validated');
+
+        Swal.fire({
+            title: '¡Faltan campos!',
+            text: 'Por favor, llena todos los campos obligatorios.',
+            icon: 'error',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#198754'
+        });
+        return;
+    }
+
+
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: "btn btn-success mx-2",
+            cancelButton: "btn btn-danger mx-2"
+        },
+        buttonsStyling: false
+    });
+
+
+    swalWithBootstrapButtons.fire({
+        title: "¿Estás seguro?",
+        text: "¿Quieres registrar este proveedor?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Sí, guardar",
+        cancelButtonText: "No, cancelar",
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            this.submit();
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+                title: "Cancelado",
+                text: "El proveedor no fue registrado.",
+                icon: "error"
+            });
+        }
+    });
+});
+</script>
 
 @endsection

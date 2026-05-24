@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\recarga_telefonica;
-use App\Models\saldo_disponible; // Importamos el modelo del saldo
+use App\Models\saldo_disponible;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Para usar transacciones
+use Illuminate\Support\Facades\DB;
 
 class RecargaTelefonicaController extends Controller
 {
@@ -22,35 +22,27 @@ class RecargaTelefonicaController extends Controller
 
     public function store(Request $request)
     {
-        // 1. Validar la entrada
         $request->validate([
             'numero_telefono' => 'required',
             'monto' => 'required|numeric|min:1',
             'compania' => 'required'
         ]);
 
-        // 2. Buscar el saldo disponible en la caja (ID 1)
         $saldoCaja = saldo_disponible::find(1);
 
-        // 3. Verificar si hay dinero suficiente antes de proceder
         if (!$saldoCaja || $saldoCaja->saldo_disponible < $request->monto) {
             return back()->with('error', 'Saldo insuficiente en caja para realizar esta recarga.');
         }
 
-        // 4. Usar una transacción para asegurar que si falla el registro, no se descuente el dinero (y viceversa)
         DB::transaction(function () use ($request, $saldoCaja) {
-            
-            // A) Registrar la recarga
             $recarga = new recarga_telefonica();
             $recarga->numero_telefono = $request->numero_telefono;
             $recarga->compania = $request->compania;
             $recarga->monto = $request->monto;
-            $recarga->fecha = $request->fecha ?? now(); // Si no viene fecha, usa la actual
-            $recarga->id_venta = $request->id_venta; 
+            $recarga->fecha = $request->fecha ?? now();
+            $recarga->id_venta = $request->id_venta;
             $recarga->save();
 
-            // B) DESCUENTO AUTOMÁTICO
-            // Restamos el monto de la recarga al saldo de la caja
             $saldoCaja->decrement('saldo_disponible', $request->monto);
         });
 
@@ -58,7 +50,44 @@ class RecargaTelefonicaController extends Controller
                          ->with('success', 'Recarga registrada y saldo descontado con éxito');
     }
 
-    // Los métodos show, edit, update y destroy pueden quedarse igual, 
-    // pero recuerda que si editas un monto o eliminas una recarga, 
-    // tendrías que decidir si devuelves el dinero a la caja o no.
+    public function show(int $id)
+    {
+        $recarga = recarga_telefonica::where('id_recarga', $id)->firstOrFail();
+        return view('recarga_telefonica.show', compact('recarga'));
+    }
+
+    public function edit(int $id)
+    {
+        $recarga = recarga_telefonica::where('id_recarga', $id)->firstOrFail();
+        return view('recarga_telefonica.edit', compact('recarga'));
+    }
+
+    public function update(Request $request, int $id)
+    {
+        $request->validate([
+            'numero_telefono' => 'required',
+            'monto' => 'required|numeric|min:1',
+            'compania' => 'required',
+            'fecha' => 'required'
+        ]);
+
+        $recarga = recarga_telefonica::where('id_recarga', $id)->firstOrFail();
+
+        $recarga->update([
+            'numero_telefono' => $request->numero_telefono,
+            'compania' => $request->compania,
+            'monto' => $request->monto,
+            'fecha' => $request->fecha
+        ]);
+
+        return redirect()->route('recargas_telefonicas.index')->with('success', 'Recarga actualizada.');
+    }
+
+    public function destroy(int $id)
+    {
+        $recarga = recarga_telefonica::where('id_recarga', $id)->firstOrFail();
+        $recarga->delete();
+
+        return redirect()->route('recargas_telefonicas.index')->with('success', 'Recarga eliminada.');
+    }
 }

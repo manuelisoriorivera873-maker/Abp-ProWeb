@@ -16,9 +16,9 @@ Route::post('/register', [LoginController::class, 'storeRegister'])->name('regis
 
 // --- RUTAS PROTEGIDAS (Solo usuarios logueados) ---
 Route::middleware('auth')->group(function () {
-    
+
     Route::get('/', function () {
-        return view('layouts.template'); 
+        return view('layouts.template');
     })->name('inicio');
 
     // Tus recursos

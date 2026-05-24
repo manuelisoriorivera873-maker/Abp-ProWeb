@@ -1,7 +1,7 @@
 @extends("layouts.template")
 
 @section("content")
-<div class="container-fluid">
+<div class="container-fluid" style="margin-top: 50px; min-height: 100vh;">
     <div class="text-center mb-4">
         <h1 class="fw-bold">Detalle de la Recarga</h1>
         <p class="text-muted">Comprobante digital de la transacción</p>
@@ -51,7 +51,7 @@
         <div class="card-footer bg-white border-0 p-4 pt-0">
             <div class="row g-2">
                 <div class="col-12">
-                    <a href="{{ route('recargas_telefonicas.index') }}" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">
+                    <a href="{{ route('recargas_telefonicas.index') }}" id="btn-volver" class="btn btn-primary btn-lg w-100 fw-bold shadow-sm">
                         <i class="fas fa-list-ul me-2"></i> Volver al Historial
                     </a>
                 </div>
@@ -70,5 +70,46 @@
         border-top: 2px dashed #dee2e6;
         margin: 1.5rem 0;
     }
+
+    @media print {
+        .card-footer, #btn-volver, .text-center p, h1.display-5 {
+            display: none !important;
+        }
+        .card {
+            box-shadow: none !important;
+            border: none !important;
+            margin-top: 0 !important;
+        }
+    }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('btn-volver').addEventListener('click', function(e) {
+        e.preventDefault();
+        const urlDestino = this.getAttribute('href');
+
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success mx-2 px-4 fw-bold",
+                cancelButton: "btn btn-danger mx-2 px-4 fw-bold"
+            },
+            buttonsStyling: false
+        });
+
+        swalWithBootstrapButtons.fire({
+            title: '¿Regresar al historial?',
+            text: 'Te redirigiremos a la lista general de transacciones.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, volver',
+            cancelButtonText: 'No, quedarme aquí',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = urlDestino;
+            }
+        });
+    });
+</script>
 @endsection

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="main-container">
-    
+
     <div class="header">
         <h1>Saldo Disponible para Recargas</h1>
         <p>Consulta el saldo disponible para realizar recargas telefónicas</p>
@@ -23,7 +23,8 @@
 
         <div class="button-group">
             <a href="{{ route('saldo_disponible.create') }}" class="btn btn-green">Recargar Saldo</a>
-            <a href="{{ url('/home') }}" class="btn btn-orange">Regresar</a>
+            <a href="{{ url('/inicio') }}" class="btn btn-orange">Regresar</a>
+
         </div>
     </div>
 </div>
@@ -66,7 +67,7 @@
     .green-text { color: #16a34a; }
 
     .button-group { display: flex; justify-content: center; gap: 20px; }
-    
+
     .btn {
         padding: 15px 30px;
         border-radius: 10px;

@@ -40,14 +40,14 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a class="btn btn-warning btn-sm px-3" href="{{ route('proveedores.edit', $proveedor->id_proveedor) }}">
+                                        <a class="btn btn-warning btn-sm px-3 btn-editar" href="{{ route('proveedores.edit', $proveedor->id_proveedor) }}">
                                             <i class="fas fa-edit"></i> Editar
                                         </a>
 
-                                        <form action="{{ route('proveedores.destroy', $proveedor->id_proveedor) }}" method="post" class="d-inline">
+                                        <form action="{{ route('proveedores.destroy', $proveedor->id_proveedor) }}" method="post" class="d-inline form-eliminar" data-nombre="{{ $proveedor->nombre_comercial }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm px-3" onclick="return confirm('¿Seguro que deseas eliminar a {{ $proveedor->nombre_comercial }}?')">
+                                            <button type="submit" class="btn btn-danger btn-sm px-3">
                                                 <i class="fas fa-trash"></i> Eliminar
                                             </button>
                                         </form>
@@ -58,7 +58,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 @if($proveedores->isEmpty())
                     <div class="alert alert-light text-center mt-3 border">
                         <i class="fas fa-info-circle text-warning"></i> No hay proveedores registrados actualmente.
@@ -68,5 +68,64 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: "btn btn-success mx-2",
+            cancelButton: "btn btn-danger mx-2"
+        },
+        buttonsStyling: false
+    });
+
+    document.querySelectorAll('.btn-editar').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const urlDestino = this.getAttribute('href');
+
+            swalWithBootstrapButtons.fire({
+                title: "¿Quieres editar este proveedor?",
+                text: "Te enviaremos al formulario de edición.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Sí, ir a editar",
+                cancelButtonText: "No, regresar",
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = urlDestino;
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('.form-eliminar').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nombreProveedor = this.getAttribute('data-nombre');
+
+            swalWithBootstrapButtons.fire({
+                title: `¿Estás seguro de eliminar a ${nombreProveedor}?`,
+                text: "¡Esta acción no se puede deshacer y el proveedor se borrará!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, bórralo",
+                cancelButtonText: "No, mantener",
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    swalWithBootstrapButtons.fire({
+                        title: "Cancelado",
+                        text: "Tu proveedor está a salvo :)",
+                        icon: "error"
+                    });
+                }
+            });
+        });
+    });
+</script>
 
 @endsection

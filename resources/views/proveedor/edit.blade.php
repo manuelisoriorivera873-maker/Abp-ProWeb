@@ -15,9 +15,11 @@
 
             <div class="card-body p-5">
 
-                <form action="{{ route('proveedores.update', $proveedor->id_proveedor) }}" method="POST">
+                <form action="{{ route('proveedores.update', $proveedor->id_proveedor) }}" method="POST" id="form-editar-proveedor" novalidate autocomplete="off">
                     @csrf
-                    @method('PUT') <div class="row">
+                    @method('PUT')
+
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label text-success fw-bold">Nombre Comercial</label>
                             <input type="text" name="nombre_comercial" class="form-control" value="{{ $proveedor->nombre_comercial }}" required>
@@ -25,7 +27,7 @@
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label text-success fw-bold">Teléfono</label>
-                            <input type="text" name="telefono" class="form-control" value="{{ $proveedor->telefono }}" required>
+                            <input type="text" name="telefono" class="form-control" value="{{ $proveedor->telefono }}" minlength="10" maxlength="10" pattern="[0-9]{10}" required>
                         </div>
                     </div>
 
@@ -66,7 +68,7 @@
                         </div>
 
                         <div class="col-6">
-                            <a href="{{ route('proveedores.index') }}" class="btn btn-outline-danger w-100">
+                            <a href="{{ route('proveedores.index') }}" id="btn-descartar" class="btn btn-outline-danger w-100">
                                 Descartar Cambios
                             </a>
                         </div>
@@ -78,5 +80,69 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+window.addEventListener('load', () => document.getElementById('form-editar-proveedor').reset());
+
+const swalWithBootstrapButtons = Swal.mixin({
+    customClass: { confirmButton: "btn btn-success mx-2", cancelButton: "btn btn-danger mx-2" },
+    buttonsStyling: false
+});
+
+document.getElementById('form-editar-proveedor').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    if (!this.checkValidity()) {
+        this.classList.add('was-validated');
+        Swal.fire({
+            title: '¡Campos pendientes!',
+            text: 'Revisa que todos los campos y el teléfono tengan los 10 dígitos obligatorios.',
+            icon: 'error',
+            confirmButtonColor: '#198754'
+        });
+        return;
+    }
+
+    swalWithBootstrapButtons.fire({
+        title: "¿Actualizar proveedor?",
+        text: "Se guardarán los nuevos cambios en el sistema.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Sí, actualizar",
+        cancelButtonText: "No, cancelar",
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            this.submit();
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+                title: "Cancelado",
+                text: "No se modificó ningún dato.",
+                icon: "info"
+            });
+        }
+    });
+});
+
+document.getElementById('btn-descartar').addEventListener('click', function(e) {
+    e.preventDefault();
+    const urlDestino = this.getAttribute('href');
+
+    swalWithBootstrapButtons.fire({
+        title: "¿Seguro que quieres cancelar?",
+        text: "Se perderán los cambios que hayas modificado en el formulario.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, salir sin guardar",
+        cancelButtonText: "No, quedarme aquí",
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = urlDestino;
+        }
+    });
+});
+</script>
 
 @endsection
