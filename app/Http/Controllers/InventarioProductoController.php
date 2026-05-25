@@ -10,31 +10,29 @@ class InventarioProductoController extends Controller
     public function index()
     {
         $productos = producto::all();
-        // Asegúrate de que la carpeta sea 'inventario_producto' o donde tengas tu index
         return view('inventario_producto.index', compact('productos'));
     }
 
     /**
-     * Muestra el formulario para crear (Pedir más)
+     * Muestra el formulario para crear
      */
     public function create()
     {
-        return view('producto.create');
+        return view('inventario_producto.create');
     }
 
     /**
-     * Guarda un nuevo producto
+     * Guarda un nuevo producto (Asignación manual sin comentarios de validación)
      */
     public function store(Request $request)
     {
-        // Guardado directo sin $request->validate() por petición previa
         $producto = new producto();
         $producto->nombre = $request->nombre;
         $producto->precio_compra = $request->precio_compra;
         $producto->precio_venta = $request->precio_venta;
         $producto->stock = $request->stock;
         $producto->categoria = $request->categoria;
-        $producto->codigo = $request->codigo; // Si usas escáner
+        $producto->codigo = $request->codigo;
         $producto->save();
 
         return redirect()->route('inventarios_productos.index')
@@ -42,11 +40,25 @@ class InventarioProductoController extends Controller
     }
 
     /**
+     * NUEVO MÉTODO: Incrementa el stock existente desde la ventana emergente de SweetAlert2
+     */
+    public function incrementarStock(Request $request, $id)
+    {
+        $producto = producto::findOrFail($id);
+        
+        // Sumamos la cantidad nueva ingresada en la alerta al stock que ya tiene el producto
+        $producto->stock = $producto->stock + $request->cantidad_nueva;
+        $producto->save();
+
+        return redirect()->route('inventarios_productos.index')
+                         ->with('success', 'Se han añadido ' . $request->cantidad_nueva . ' unidades a las existencias de: ' . $producto->nombre . ' 🎉');
+    }
+
+    /**
      * Muestra el formulario de edición
      */
     public function edit($id)
     {
-        // Buscamos por el ID que viene de la tabla
         $producto = producto::findOrFail($id);
         return view('inventario_producto.edit', compact('producto'));
     }
