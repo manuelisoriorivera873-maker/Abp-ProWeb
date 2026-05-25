@@ -9,14 +9,15 @@
 
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm border-0" id="ticket-card">
                 <div class="card-header bg-primary text-white py-3">
                     <div class="row align-items-center">
                         <div class="col-6">
                             <h5 class="mb-0 fw-bold"><i class="fas fa-store me-2"></i>Tienda La Subidita</h5>
                         </div>
                         <div class="col-6 text-end">
-                            <span class="fw-bold">Fecha:</span> {{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y H:i') }}
+                            <span class="fw-bold">Fecha:</span> {{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y') }}<br>
+                            <span class="fw-bold">Hora:</span> {{ \Carbon\Carbon::parse($venta->hora)->format('h:i A') }}
                         </div>
                     </div>
                 </div>
@@ -25,7 +26,7 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <p class="mb-1 text-muted text-uppercase small fw-bold">Estado de Pago</p>
-                            <span class="badge bg-success px-3 py-2 shadow-sm"><i class="fas fa-check-circle me-1"></i> Completado</span>
+                            <span class="badge bg-success px-3 py-2 shadow-sm">Completado</span>
                         </div>
                         <div class="col-md-6 text-end">
                             <p class="mb-1 text-muted text-uppercase small fw-bold">Método de Venta</p>
@@ -68,39 +69,54 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="card-footer bg-light py-3 border-0">
-                    <div class="d-flex justify-content-between">
-                        <a href="{{ route('ventas.index') }}" class="btn btn-secondary px-4 fw-bold shadow-sm">
-                            <i class="fas fa-arrow-left me-2"></i> Volver al Historial
-                        </a>
-                        <button class="btn btn-primary px-4 fw-bold shadow-sm" onclick="window.print()">
-                            <i class="fas fa-print me-2"></i> Imprimir Ticket
-                        </button>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ route('ventas.index') }}" class="btn btn-secondary px-4 fw-bold shadow-sm">
+                    <i class="fas fa-arrow-left me-2"></i> Volver al Historial
+                </a>
+                <button class="btn btn-primary px-4 fw-bold shadow-sm" onclick="confirmarImprimir()">
+                    <i class="fas fa-print me-2"></i> Imprimir Ticket
+                </button>
             </div>
             
             <p class="text-center mt-4 text-muted small">
-                Gracias por su compra en <strong>Tienda La Subidita</strong>. Guarde este comprobante para cualquier aclaración.
+                Gracias por su compra en <strong>Tienda La Subidita</strong>.
             </p>
         </div>
     </div>
 </div>
 
-<style>
-    /* Estilo para que al imprimir no salgan los botones ni el fondo gris */
-    @media print {
-        .btn, .text-center.mb-4, .card-footer {
-            display: none !important;
-        }
-        .card {
-            border: none !important;
-            shadow: none !important;
-        }
-        body {
-            background-color: white !important;
-        }
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarImprimir() {
+        Swal.fire({
+            title: '¿Imprimir Ticket?',
+            text: "¿Desea enviar este comprobante a la impresora?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, imprimir'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var contenido = document.getElementById('ticket-card').innerHTML;
+                var ventana = window.open('', '_blank', 'width=800,height=600');
+                
+                ventana.document.write('<html><head><title>Ticket Venta #{{ $venta->id_venta }}</title>');
+                ventana.document.write('<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
+                ventana.document.write('<style>body { padding: 20px; } .card { border: none !important; }</style>');
+                ventana.document.write('</head><body>');
+                ventana.document.write(contenido);
+                ventana.document.write('</body></html>');
+                
+                ventana.document.close();
+                ventana.focus();
+                
+                setTimeout(function() {
+                    ventana.print();
+                    ventana.close();
+                }, 500);
+            }
+        });
     }
-</style>
+</script>
 @endsection

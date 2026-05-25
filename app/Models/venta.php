@@ -8,10 +8,11 @@ class venta extends Model
 {
     protected $table = 'ventas';
     protected $primaryKey = 'id_venta';
-    public $timestamps = false;
+    public $timestamps = false; // Ajusta a true si tu base de datos tiene created_at/updated_at
 
     protected $fillable = [
         'fecha',    
+        'hora',    // <--- Agregamos este campo
         'total',
         'tipo_venta'
     ];
@@ -21,7 +22,6 @@ class venta extends Model
      */
     public function detalles()
     {
-        // Esto permite que en el ticket (show) puedas acceder a los productos
         return $this->hasMany(detalle_venta::class, 'id_venta', 'id_venta');
     }
 }
